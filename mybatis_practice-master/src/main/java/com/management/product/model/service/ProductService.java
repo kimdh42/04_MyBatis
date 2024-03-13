@@ -86,7 +86,6 @@ public class ProductService {
         sqlSession.close();
 
         return result > 0? true : false;
-
     }
 
     public boolean deleteProduct(Map<String, String> parameter) {

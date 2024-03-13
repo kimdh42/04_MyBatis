@@ -71,7 +71,16 @@
             </if>
 
             <if test="option == 'newProduct'">
-                AND A.RELEASE_DATE LIKE '202305%%'
+<!--                AND A.RELEASE_DATE LIKE '202305%%'-->
+
+                <!-- YEAR(CURRENT_DATE()) : MySQL에서 현재 년도 반환 함수
+                     MONTH(CURRENT_DATE()) : MySQL에서 현재 월  반환 함수
+                     LPAD('문자열' or 열 이름, 자릿수(숫자로 지정), '채워질 문자') : ('문자열' or 열이름)의 왼쪽부터 특정 문자로 자릿수를 채우는 함수(반대는 RPAD도 있음)
+                     함수 마지막 '01'과 '31'은 '일' 을 나타냄
+                -->
+                AND A.RELEASE_DATE
+                BETWEEN CONCAT(YEAR(CURRENT_DATE()), LPAD(MONTH(CURRENT_DATE()), 2, '0'), '01')
+                AND CONCAT(YEAR(CURRENT_DATE()), LPAD(MONTH(CURRENT_DATE()), 2, '0'),  '31')
             </if>
             <if test="option == 'nonProduction'">
                 AND A.PRODUCTION_STATUS = 'N'
@@ -107,20 +116,36 @@
 
     <!-- 6. 사용자가 수정을 원하는 데이터만 수정하도록 Dynamic Query를 활용한 쿼리를 작성하세요.
             (쿼리id) updateProduct -->
+
     <update id="updateProduct" parameterType="com.management.product.model.dto.ProductDTO">
         UPDATE
-            product_info
-        SET
-            PRODUCT_NAME = #{ productName }
-            , CATEGORY_CODE =  #{ categoryCode }
-            , ORIGIN_COST = #{ originCost }
-            , RELEASE_DATE = #{ releaseDate }
-            , STOCK_QUANTITY = #{ stockQuantity }
-            , DISCOUNT_RATE = #{ discountRate }
-            , SALES_QUANTITY = #{ salesQuantity }
+        product_info
+        <set>
+            <if test="productName != 'SKIP'">
+                PRODUCT_NAME = #{ productName }
+            </if>
+            <if test="categoryCode != 'SKIP'">
+                , CATEGORY_CODE =  #{ categoryCode }
+            </if>
+            <if test="originCost != 'SKIP'">
+                , ORIGIN_COST = #{ originCost }
+            </if>
+            <if test="releaseDate != 'SKIP'">
+                , RELEASE_DATE = #{ releaseDate }
+            </if>
+            <if test="stockQuantity != 'SKIP'">
+                , STOCK_QUANTITY = #{ stockQuantity }
+            </if>
+            <if test="discountRate != 'SKIP'">
+                , DISCOUNT_RATE = #{ discountRate }
+            </if>
+            <if test="salesQuantity != 'SKIP'">
+                , SALES_QUANTITY = #{ salesQuantity }
+            </if>
             , PRODUCTION_STATUS = #{ productionStatus }
-        WHERE
+            WHERE
             PRODUCT_CODE = #{ productCode }
+        </set>
     </update>
 
     <!-- 7. 제품 정보를 삭제하는 쿼리를 작성하세요.
